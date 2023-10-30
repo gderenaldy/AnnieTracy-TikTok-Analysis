@@ -265,7 +265,7 @@ with tiktok_container:
 
 		m = lasso_cv.coef_
 
-		st.text('Use Lasso regression due to high levels of multicolllinearity between predictor variables.')
+		st.text('Use Lasso regression due to high levels of multicollinearity between predictor variables.')
 
 		lasso_cv.alpha_.round(2)
 
