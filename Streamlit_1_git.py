@@ -257,7 +257,7 @@ with tiktok_container:
 		# Convert y_train to a 1D array
 		y_train_p = np.array(y_train).ravel()
 	
-		st.cache_resource
+		@st.cache_resource
 		
 		def lasso_cv_cache():
 			return LassoCV()
