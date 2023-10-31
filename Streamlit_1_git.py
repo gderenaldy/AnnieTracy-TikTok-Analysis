@@ -256,8 +256,13 @@ with tiktok_container:
 
 		# Convert y_train to a 1D array
 		y_train_p = np.array(y_train).ravel()
-
-		lasso_cv = LassoCV() #ls is the container for parameter m and c in y=mX+c
+	
+		st.cache
+		
+		def lasso_cv_cache():
+			return LassoCV()
+			
+		lasso_cv = lasso_cv_cache() #ls is the container for parameter m and c in y=mX+c
 
 		lasso_cv.fit(x_train , y_train) #training part to get m and c
 
