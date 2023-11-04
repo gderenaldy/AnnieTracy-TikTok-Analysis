@@ -8,8 +8,6 @@ import seaborn as sns
 import streamlit as st 
 from sklearn.linear_model import LinearRegression, LassoCV
 from sklearn.model_selection import train_test_split
-from sklearn.ensemble import RandomForestRegressor
-from sklearn.metrics import mean_squared_error
 
 plt.style.use('seaborn')
 
@@ -87,10 +85,10 @@ with tiktok_container:
 		st.markdown("### **Week of 08/23 - 08/29**")
 		st.markdown("### Positive Correlations Insights: ")
 		st.markdown('''It appears that there are no negative correlations between the variables in the dataset. All variables are positively correlated to some degree. 
-		however, the slighlty less strong correlation with *Comments*, compared to *Likes* and *Shares*, might suggest that users are more likely to engage 
-		with the Annie's TikToks through likes and shares more so than through comments. 
-		In addition, there are **High** levels of multicolllinearity between variables. 
-			''')
+					however, the slighlty less strong correlation with *Comments*, compared to *Likes* and *Shares*, might suggest that users are more likely to engage 
+					with the Annie's TikToks through likes and shares more so than through comments. 
+					In addition, there are **High** levels of multicolllinearity between variables. 
+					''')
 		st.divider()
 
 		#boxplot to see outliers for each variable: 'Video Views', 'Profile Views', 'Likes', 'Comments', 'Shares', 'Unique Viewers'
@@ -249,7 +247,7 @@ with tiktok_container:
 		tk_data = pd.read_csv('Data/z_RegressionSocialData.csv')
 		x = tk_data.drop('Profile Views', axis =1)
 		y = tk_data['Profile Views']
-		x_train, x_test, y_train, y_test = train_test_split(x,y, test_size = 0.2, random_state = 123)
+		x_train, x_test, y_train, y_test = train_test_split(x,y, test_size = 0.5, random_state = 123)
 
 		# There's no need to reshape x_train for multiple regression 
 		x_train_p = np.array(x_train)
@@ -257,7 +255,12 @@ with tiktok_container:
 		# Convert y_train to a 1D array
 		y_train_p = np.array(y_train).ravel()
 
-		lasso_cv = LassoCV() #ls is the container for parameter m and c in y=mX+c
+		@st.cache_resource
+		
+		def lasso_cv_cache():
+			return LassoCV()
+
+		lasso_cv = lasso_cv_cache() #ls is the container for parameter m and c in y=mX+c
 
 		lasso_cv.fit(x_train , y_train) #training part to get m and c
 
@@ -265,72 +268,73 @@ with tiktok_container:
 
 		m = lasso_cv.coef_
 
-		st.text('Use Lasso regression due to high levels of multicolllinearity between predictor variables.')
+		st.markdown('Use of Lasso regression due to high levels of multicollinearity between predictor variables.')
 
 		lasso_cv.alpha_.round(2)
 
-		st.text(f'Optimal Alpha:{lasso_cv.alpha_: .2f}')
+		st.markdown(f'Optimal Alpha: {lasso_cv.alpha_: .2f}')
 		
 		lasso_cv_coefficients = lasso_cv.coef_
 
 		lasso_cv_coefficients.round(2)
 
-		st.text(f' Intercept : {c: .0f}')
+		st.markdown(f' Intercept : {c: .0f}')
 
-		y_pred_test = m*x_test + c #our model
+		st.markdown('Most relevant predictor(s): **Video Views** , **Shares** (marginal)')
+
+		y_pred = np.dot(x_test , m) + c #our model
 
 		fig4 , (ax9, ax12) = plt.subplots(1,2,figsize=(15, 10), sharey = True)
 
-		#random_indices = np.random.choice(len(x_test), 10, replace=False)
-		#x_samples = x_test.iloc[random_indices]
-		#y_pred_samples = y_pred_test.iloc[random_indices]
-
-		#new x_samples dataframe with 5 columns and 10 random samples for each from the og x_test dataset
-
-		ax9.scatter(x_test['Video Views'], y_test)
-		ax9.scatter(x_test['Video Views'], y_pred_test['Video Views'], color = 'red')
+		ax9.scatter(x_train['Video Views'], y_train)
+		ax9.scatter(x_test['Video Views'], y_pred, color = 'red')
 		ax9.set_ylabel('Profile Views (test)')
-		ax9.set_xlabel('10 Video Views Samples (test)')
+		ax9.set_xlabel('Video Views Samples (test)')
 
-		ax12.scatter(x_test['Shares'], y_test)
-		ax12.scatter(x_test['Shares'], y_pred_test['Shares'], color = 'red')
+		ax12.scatter(x_train['Shares'], y_train)
+		ax12.scatter(x_test['Shares'], y_pred, color = 'red')
 		ax12.set_ylabel('Profile Views (test)')
-		ax12.set_xlabel('10 Shares Samples (test)')
+		ax12.set_xlabel('Shares Samples (test)')
 
 		plt.tight_layout()
 		st.pyplot(fig4)
 
-		#rmse_VideoViews = (mean_squared_error(y_test, y_pred_test['Video Views'])**0.5).round(0)
+		rmse = np.mean((y_test - y_pred) ** 2) **0.5
+		rmse.round(3)
 
-		#st.write(rmse_VideoViews)
+		average_actual = np.mean(y_test)
 
-		st.text('Standard deviations from original data:')
+		# Calculate the relative RMSE as a percentage
+		rmse_percent = ((rmse / average_actual) * 100).round(2)
+		
+		st.markdown(f'Average model prediction error:{rmse: .2f}. About **{rmse_percent}%** of the average number of profile views')
+
+		st.markdown('Standard deviations from original data:')
 		st.write(tk_social_data_not_viral_cleaned[['Video Views','Shares']].std().round(0))
 
-		st.markdown('### Optimizing Digital Strategy with Our Model')
-		st.markdown('''Our analysis reveals key insights into driving profile views. 
-					Central to this is the influence of two metrics: **Video Views** and **Shares**. 
-					These factors have considerable positive impact on Annie's TikTok profile visibility. Notably, 
-					For every standard deviation increase in **Video Views** (90,477), there's an average augmentation of 11,549 in **Profile views**. 
-					This translates to a ratio of 7.83 **Video Views** to a single **Profile View**.''')
+		st.markdown('### Optimizing Digital Strategy: ***Focus***')
+		st.markdown('''The analysis reveals key insights into driving **profile views** by focusing on raising total **Video Views** for Annie's TikTok account. 
+					This variable has considerable positive impact on Annie's TikTok profile visibility. 
+					Notably, for every standard deviation increase in Video Views (90,477), there is an average increase of 11,687 in Profile Views. 
+					This translates to a ratio of approximately 7.74 Video Views for a single Profile View.''')
 
-with st.sidebar: 
+#with st.sidebar: 
 
-	uploaded_file = st.sidebar.file_uploader("Please, choose a file") 
+	#uploaded_file = st.sidebar.file_uploader("Please, choose a file") 
 
-	if uploaded_file:  #if a file is uploaded, then ...	
-		st.success("file uploaded succesfully")
+	#if uploaded_file:  #if a file is uploaded, then ...	
+		#st.success("file uploaded succesfully")
 		
-		st.markdown("### Descriptive Statistics")
-		df = pd.read_csv(uploaded_file)
-		st.write(df.describe())
-		st.markdown("### Null Values")
-		st.write(df.isnull().sum())
+		#st.markdown("### Descriptive Statistics")
+		#df = pd.read_csv(uploaded_file)
+		#st.write(df.describe())
+		#st.markdown("### Null Values")
+		#st.write(df.isnull().sum())
 
-		st.markdown("### Dataset Top 5 Rows")
-		st.write(df.head())
+		#st.markdown("### Dataset Top 5 Rows")
+		#st.write(df.head())
 
-	st.divider()
+	#st.divider()
 
 
 
