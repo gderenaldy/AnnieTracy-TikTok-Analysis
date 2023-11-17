@@ -6,10 +6,12 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 import streamlit as st 
-from sklearn.linear_model import LinearRegression, LassoCV
+from sklearn.linear_model import LassoCV
 from sklearn.model_selection import train_test_split
 
 plt.style.use('seaborn')
+st.set_page_config(layout="wide")
+
 
 pd.set_option('display.float_format', '{:.2f}'.format)
 
@@ -19,7 +21,7 @@ tiktok_container = st.container()
 with intro_container:
 
 	st.title("Annie Tracy TikTok EDA") 
-	st.subheader("Performing EDA on Annie Tracy's TikTok data for potential insigths to improve digital strategy")
+	st.subheader("Performing EDA on Annie Tracy's TikTok data for potential insigths on digital strategy")
 	st.divider()
 
 with tiktok_container:
@@ -30,8 +32,12 @@ with tiktok_container:
 	with tab1: 
 		
 		#aggregate active followers by date and hour
-		
+		@st.cache_data
+		def load_data(Follower_activity):
+			tk_data = pd.read_csv('Data/Follower activity.csv')
+			return tk_data
 		tk_data = pd.read_csv('Data/Follower activity.csv')
+		
 		tk_data['Date'] = pd.to_datetime(tk_data['Date'])
 		tk_data['Hour'] = tk_data['Hour'].astype('int') 
 		tk_data['Active followers'] = tk_data['Active followers'].astype('int')
@@ -69,7 +75,20 @@ with tiktok_container:
 		
 		#Checking for correlation between variables in the social dataset
 
+		@st.cache_data
+		def load_data_2(Annie_Tracy_TikTok_Social_Analytics):
+			tk_social_data = pd.read_csv('Data/Annie Tracy_TikTok_Social_Analytics.csv')
+			return tk_social_data
 		tk_social_data = pd.read_csv('Data/Annie Tracy_TikTok_Social_Analytics.csv')
+
+		@st.cache_data
+		def load_data_3(New_RegressionData_upto_11_05):
+			New_RegressionData = pd.read_csv('Data/New_RegressionData_upto_11.05.csv')
+			return New_RegressionData 
+		New_RegressionData = pd.read_csv('Data/New_RegressionData_upto_11.05.csv')
+
+
+		tk_social_data = pd.concat([tk_social_data , New_RegressionData])
 		tk_social_data_cleaned = tk_social_data.drop(tk_social_data.columns[0], axis =1) #remove date coloumn
 		tk_social_data_cleaned = tk_social_data_cleaned.drop(range(0,7), axis =0).reset_index(drop = True) #remove first 6 rows because data is erroneous 
 
@@ -82,7 +101,7 @@ with tiktok_container:
 		plt.tight_layout()
 		st.pyplot(fig2)
 
-		st.markdown("### **Week of 08/23 - 08/29**")
+		st.markdown("### **From: 07/10 - 11/05 (No 09/01 - 09/06)**")
 		st.markdown("### Positive Correlations Insights: ")
 		st.markdown('''It appears that there are no negative correlations between the variables in the dataset. All variables are positively correlated to some degree. 
 					however, the slighlty less strong correlation with *Comments*, compared to *Likes* and *Shares*, might suggest that users are more likely to engage 
@@ -91,17 +110,17 @@ with tiktok_container:
 					''')
 		st.divider()
 
-		#boxplot to see outliers for each variable: 'Video Views', 'Profile Views', 'Likes', 'Comments', 'Shares', 'Unique Viewers'
+		#boxplot to see outliers for each variable: 'Video Views', 'Profile Views', 'Likes', 'Comments', 'Shares'
 		# -----boxplot-----
 
-		fig3, (ax4 , ax5 , ax6 , ax7 , ax8) = plt.subplots(1,5, figsize=(15, 10))
+		fig3, (ax4 , ax5 , ax6 , ax7 , ax8) = plt.subplots(1,5, figsize=(20, 15))
 		fig3.set_facecolor("white")
 		
-		sns.boxplot(y=tk_social_data_cleaned['Video Views'], ax=ax4)
-		sns.boxplot(y=tk_social_data_cleaned['Profile Views'], ax=ax5)
-		sns.boxplot(y=tk_social_data_cleaned['Likes'], ax=ax6)
-		sns.boxplot(y=tk_social_data_cleaned['Comments'], ax=ax7)
-		sns.boxplot(y=tk_social_data_cleaned['Shares'], ax=ax8)
+		sns.boxplot(y=tk_social_data_cleaned['Video Views'], ax=ax4, orient='Y', showmeans=True)
+		sns.boxplot(y=tk_social_data_cleaned['Profile Views'], ax=ax5, orient='Y', showmeans=True)
+		sns.boxplot(y=tk_social_data_cleaned['Likes'], ax=ax6, orient='Y', showmeans=True)
+		sns.boxplot(y=tk_social_data_cleaned['Comments'], ax=ax7, orient='Y', showmeans=True)
+		sns.boxplot(y=tk_social_data_cleaned['Shares'], ax=ax8, orient='Y', showmeans=True)
 
 		ax4.set_title('Video Views')
 		ax5.set_title('Profile Views')
@@ -111,60 +130,75 @@ with tiktok_container:
 		
 		for ax in [ax4, ax5, ax6, ax7, ax8]:
 			ax.ticklabel_format(style='plain', axis='y')
+			ax.set_yscale('log')
 
-		fig3.suptitle('Boxplot for Outliers', fontsize=20)
+		fig3.suptitle('Boxplot for "Viral" Days', fontsize=20)
 		
 		plt.tight_layout()
 		st.pyplot(fig3)
 
+		# create a dict of dicts with the column names as the keyword for each dict of statistics
+		#stats = dict(tk_social_data_cleaned.columns, boxplot_stat(tk_social_data_cleaned))
+
+		#st.write(stats)
+
 		#filters dataset for "outliers"
-		tk_social_data_filtered = tk_social_data[(tk_social_data['Video Views'] > 35000) & 
-																(tk_social_data['Profile Views'] >= 10000) & 
-																(tk_social_data['Likes'] > 42000) &
-																(tk_social_data['Comments'] >= 1400) & 
-																(tk_social_data['Shares'] > 2500)]
+		tk_social_data_filtered = tk_social_data[(tk_social_data['Video Views'] > 25000) & 
+																(tk_social_data['Profile Views'] >= 8000) & 
+																(tk_social_data['Likes'] > 30000) &
+																(tk_social_data['Comments'] >= 700) & 
+																(tk_social_data['Shares'] > 1000)]
 
 		st.write(tk_social_data_filtered)
 
 		st.markdown('### **Viral Content**')
 
-		st.markdown('''By looking at the boxplots, we can filter the dataset for TikTok entries that could be considered ***viral***. 
-					This could be due to the content itself, the timing of the post, or any current trends or viral challenges.
-					This  may be useful for future reference if one wants to replicate similar content strategies for virality.''')
+		st.markdown('''By using boxplots, we can filter the dataset for those days when Annie's profile went ***viral***.
+					Specifically, TikTok posts "Empire State of Mind (3.4M views) & "Original B&W" (1.6M views)" are behind her profile going viral the week of 7/10. 
+					2 weeks later, TikTok's algorithm picked these posts up making Annie's profiile go "viral" once again on the week of 7/24.
+					''')
 
 		#filtering out the 'viral' posts to find the mean of each feature:
 
-		viral_indices = [6, 7, 8, 9, 11, 21, 22]
+		viral_indices = [6, 7, 8, 9, 10, 11, 20 , 21, 22, 23, 24]
 
-		tk_social_data_not_viral = tk_social_data.drop(viral_indices)
+		tk_social_data_not_viral = tk_social_data.drop(viral_indices).reset_index()
+
+		tk_social_data_not_viral_VideoViews = tk_social_data_not_viral['Video Views']
+		tk_social_data_not_viral_ProfileViews = tk_social_data_not_viral['Profile Views']
+		tk_social_data_not_viral_Likes = tk_social_data_not_viral['Likes']
+		tk_social_data_not_viral_Comments = tk_social_data_not_viral['Comments']
+		tk_social_data_not_viral_Shares = tk_social_data_not_viral['Shares']
+		tk_social_data_not_viral_UniqueViewers = tk_social_data_not_viral['Unique Viewers']
 
 		cl1, cl2, cl3, cl4, cl5, cl6 = st.columns (6)
 
 		with cl1:
 			st.markdown('##### *Video Views*: ')
-			st.text('84,743')
+			st.text(f'{tk_social_data_not_viral_VideoViews.mean(): .0f}')
 
 		with cl2:
 			st.markdown('##### *Profile Views*: ')
-			st.text('2,901')
+			st.text(f'{tk_social_data_not_viral_ProfileViews.mean(): .0f}')
 
 		with cl3: 
 			st.markdown('##### *Likes*: ')
-			st.text('10,129')
+			st.text(f'{tk_social_data_not_viral_Likes.mean(): .0f}')
 
 		with cl4:
 			st.markdown('##### *Comments*: ')
-			st.text('275')
+			st.text(f'{tk_social_data_not_viral_Comments.mean(): .0f}')
 
 		with cl5:
 			st.markdown('##### *Shares*: ')
-			st.text('516')
+			st.text(f'{tk_social_data_not_viral_Shares.mean(): .0f}')
 
 		with cl6:
 			st.markdown('##### *Unique Views*: ')
-			st.text('51,082')
+			st.text(f'{tk_social_data_not_viral_UniqueViewers.mean(): .0f}')
 
-		st.markdown("These are the average values for each feature in the dataset. Could be useful to compare these to the ***viral*** posts above.")
+		st.markdown('''These are the average values for each feature in the dataset on a daily basis for Annie's TikTok profile. 
+					Could be useful to compare these to the ***viral*** days above.''')
 
 		st.divider()
 
@@ -192,7 +226,7 @@ with tiktok_container:
 
 		tk_social_data_filtered['Share-to-Like Ratio'] = tk_social_data_filtered['Shares'] / (tk_social_data_filtered['Likes'] + 1)
 
-		st.write(tk_social_data_filtered.loc[:, 'Engagement Rate' :'Share-to-Like Ratio'])
+		st.write(tk_social_data_filtered.loc[:,'Engagement Rate':'Share-to-Like Ratio'])
 
 		#compare engagement rate of viral posts to the engagement rate of non-viral ones
 		
@@ -206,18 +240,17 @@ with tiktok_container:
 		
 		st.markdown(f'The Average Engagement Rate for Non-Viral Posts is: {mean_engage_not_viral: .2f} %')
 
-		st.markdown('''The 64 percent increase in engagement rate for viral posts is a positive finding as 
-				#**viral** content with lower engagement rates than regular may suggest a broad yet non-targeted reach, and / or audience mismatch.''')
+		st.markdown(f'''The {(mean_engage_viral - mean_engage_not_viral) / mean_engage_not_viral * 100: .2f} % increase in engagement rate for viral posts is a positive finding as 
+					**viral** content with lower engagement rates than regular may suggest a broad yet non-targeted reach, and / or audience mismatch.''')
 
 		st.divider()
 
 	with tab3:
 
 		#using the filtered dataset (not including viral posts), let's predict engagement rate based on all features provided
-
-		tk_social_data_not_viral_cleaned = tk_social_data_not_viral.iloc[6:, 1:] #take off first 6 rows and first 'Date' column
-
-		st.markdown('Post z-score normalization. **Profile Views** as outcome variable')
+		tk_social_data_not_viral_cleaned = tk_social_data_not_viral.iloc[6:, 2:] #take off first 6 rows and first 'Date' column
+	
+		st.markdown('z-score normalization. **Profile Views** as outcome variable')
 
 		#normalize features
 
@@ -234,20 +267,29 @@ with tiktok_container:
 		z_normalized_social_data = zscore_standardize(tk_social_data_not_viral_cleaned_noEngagement)
 
 		#merge on indexes
+		
 		z_RegressionSocialData = pd.merge(z_normalized_social_data, tk_social_data_not_viral_cleaned['Profile Views'], left_index = True, right_index = True)
 
-		#z_RegressionSocialData.to_csv('z_RegressionSocialData.csv', index = False)
-
-		#z_normalized_social_data.to_csv('z_normalized_social_data.csv', index=False)
+		z_RegressionSocialData.to_csv('z_RegressionSocialData.csv', index = False)
 		
-		st.write(z_normalized_social_data)
+		st.write(z_RegressionSocialData)
 
-		#build model
+		st.subheader('Lasso Regression')
+		st.markdown('Leveraing *Lasso* regression due to high levels of multicollinearity between predictor variables.')
 
-		tk_data = pd.read_csv('Data/z_RegressionSocialData.csv')
-		x = tk_data.drop('Profile Views', axis =1)
-		y = tk_data['Profile Views']
-		x_train, x_test, y_train, y_test = train_test_split(x,y, test_size = 0.5, random_state = 123)
+		#load data
+
+		@st.cache_data
+		def load_data_4(z_RegressionSocialData):
+			tk_data_regression = pd.read_csv('Data/z_RegressionSocialData.csv')
+			return tk_data_regression
+		tk_data_regression = pd.read_csv('Data/z_RegressionSocialData.csv')
+
+		#split testing and training sets
+
+		x = tk_data_regression.drop('Profile Views', axis =1)
+		y = tk_data_regression['Profile Views']
+		x_train, x_test, y_train, y_test = train_test_split(x,y, test_size = 0.1, random_state = 123)
 
 		# There's no need to reshape x_train for multiple regression 
 		x_train_p = np.array(x_train)
@@ -255,68 +297,85 @@ with tiktok_container:
 		# Convert y_train to a 1D array
 		y_train_p = np.array(y_train).ravel()
 
-		@st.cache_resource
+		formula = r'''
+		$$
+		\text{Profile Views} = 2020 + (1545 \times \text{Video Views}) + (545 \times \text{Likes}) + (252 \times \text{Comments}) + (84 \times \text{Shares}) + (98 \times \text{Unique Viewers}) + \epsilon
+		$$
+		'''
+		st.markdown(formula)
+
+		with st.expander('Code'):
+
+			st.text(
+
+				'''def compute_cost_lasso(x_train, y_train, w, b, lambda_): 
+					m = x_train.shape[0]  # Number of training examples
+					cost_sum = 0
+					for i in range(m): 
+						y_pred = np.dot(x_train.iloc[i], w) + b
+						cost = (y_pred - y_train.iloc[i]) ** 2  
+						cost_sum += cost
+						total_cost = (1 / (2 * m)) * cost_sum + (lambda_ / (2 * m)) * np.sum(np.abs(w))
+					return total_cost
+
+				def compute_gradient_lasso(x_train, y_train, w, b, lambda_):
+					m = x_train.shape[0]
+					dj_dbdj_dw = np.zeros(w.shape)
+					dj_db = 0
+					for i in range(m):  
+						y_pred = np.dot(x_train.iloc[i], w) + b
+						dj_dw_i = (y_pred - y_train.iloc[i]) * x_train.iloc[i].values.reshape(-1,1)
+						dj_db_i = y_pred - y_train.iloc[i]
+						dj_db += dj_db_i 
+						dj_dw += dj_dw_i 
+					dj_dw = dj_dw / m + lambda_ * np.sign(w) / m
+					dj_db = dj_db / m
+					return dj_dw, dj_db
+
+				def gradient_descent_lasso(x_train, y_train, w_init, b_init, alpha, iterations, lambda_, compute_cost_lasso, compute_gradient_lasso):
+					b = b_init 
+					w = w_init
+					for i in range(iterations): 
+						dj_dw, dj_db = compute_gradient_lasso(x_train, y_train, w, b, lambda_)
+						b = b - alpha * dj_db
+						w = w - alpha * dj_dw
+					return w, b
+
+				w_init = np.zeros((5, 1))
+				b_init = 0
+
+				lambda_ = 10
+				iterations = 10000
+				tmp_alpha = 0.001
+				w_final, b_final = gradient_descent_lasso(x_train, y_train, w_init, b_init, tmp_alpha, iterations, lambda_, compute_cost_lasso, compute_gradient_lasso)
+				print(w_final.round(0), b_final.round(0))
+
+				def compute_rmse(y_test, y_pred):
+					rmse = np.mean((y_test - y_pred) ** 2) ** 0.5
+					return rmse
+
+				y_pred = np.dot(x_test, w_final) + b_final
+				y_pred = y_pred.ravel()
+				print (y_pred.round(2))
+				rmse = compute_rmse(y_test, y_pred)
+				print (rmse.round(0))''')
+			
+		st.divider()
+
+		st.markdown('### Optimizing Digital Strategy')
 		
-		def lasso_cv_cache():
-			return LassoCV()
+		st.markdown('''The analysis reveals key insights into driving **profile views** by focusing mostly on raising total **Video Views** for Annie's TikTok account. 
+					This variable has considerable positive impact on Annie's TikTok profile visibility.''') 
 
-		lasso_cv = lasso_cv_cache() #ls is the container for parameter m and c in y=mX+c
+		st.markdown('''Notably, for every standard deviation increase in Video Views (90,477), there is an average increase of 1545 Profile Views. 
+					This translates to a ratio of approximately 58.56 Video Views for a single Profile View. 
+					In addition, one could focus on expanding engagement as well by boosting Likes and Comments with marginal overall returns.''')
 
-		lasso_cv.fit(x_train , y_train) #training part to get m and c
+		st.markdown('##### **ATTENTION**: ')
+		st.markdown('''Due to the predictors being higly correlated to eachoter, results may be misleading. 
+					This is also supported by the residulats **NOT** being normally distributed.''')
 
-		c = lasso_cv.intercept_
-
-		m = lasso_cv.coef_
-
-		st.markdown('Use of Lasso regression due to high levels of multicollinearity between predictor variables.')
-
-		lasso_cv.alpha_.round(2)
-
-		st.markdown(f'Optimal Alpha: {lasso_cv.alpha_: .2f}')
-		
-		lasso_cv_coefficients = lasso_cv.coef_
-
-		lasso_cv_coefficients.round(2)
-
-		st.markdown(f' Intercept : {c: .0f}')
-
-		st.markdown('Most relevant predictor(s): **Video Views** , **Shares** (marginal)')
-
-		y_pred = np.dot(x_test , m) + c #our model
-
-		fig4 , (ax9, ax12) = plt.subplots(1,2,figsize=(15, 10), sharey = True)
-
-		ax9.scatter(x_train['Video Views'], y_train)
-		ax9.scatter(x_test['Video Views'], y_pred, color = 'red')
-		ax9.set_ylabel('Profile Views (test)')
-		ax9.set_xlabel('Video Views Samples (test)')
-
-		ax12.scatter(x_train['Shares'], y_train)
-		ax12.scatter(x_test['Shares'], y_pred, color = 'red')
-		ax12.set_ylabel('Profile Views (test)')
-		ax12.set_xlabel('Shares Samples (test)')
-
-		plt.tight_layout()
-		st.pyplot(fig4)
-
-		rmse = np.mean((y_test - y_pred) ** 2) **0.5
-		rmse.round(3)
-
-		average_actual = np.mean(y_test)
-
-		# Calculate the relative RMSE as a percentage
-		rmse_percent = ((rmse / average_actual) * 100).round(2)
-		
-		st.markdown(f'Average model prediction error:{rmse: .2f}. About **{rmse_percent}%** of the average number of profile views')
-
-		st.markdown('Standard deviations from original data:')
-		st.write(tk_social_data_not_viral_cleaned[['Video Views','Shares']].std().round(0))
-
-		st.markdown('### Optimizing Digital Strategy: ***Focus***')
-		st.markdown('''The analysis reveals key insights into driving **profile views** by focusing on raising total **Video Views** for Annie's TikTok account. 
-					This variable has considerable positive impact on Annie's TikTok profile visibility. 
-					Notably, for every standard deviation increase in Video Views (90,477), there is an average increase of 11,687 in Profile Views. 
-					This translates to a ratio of approximately 7.74 Video Views for a single Profile View.''')
+		st.image('Histogram of Residuals.png')
 
 #with st.sidebar: 
 
