@@ -375,7 +375,7 @@ with tiktok_container:
 		st.markdown('''Due to the predictors being higly correlated to eachoter, results may be misleading. 
 					This is also supported by the residulats **NOT** being normally distributed.''')
 
-		st.image('Histogram of Residuals.png')
+		st.image('Image/Histogram of Residuals.png')
 
 #with st.sidebar: 
 
