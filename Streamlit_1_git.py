@@ -200,30 +200,30 @@ with tiktok_container:
 		st.markdown('### **Social Features for Viral Posts**')
 
 		# proportion of interactions (likes, comments, shares) per video view
-		tk_social_data_filtered['Engagement Rate'] = (tk_social_data_filtered['Likes'] + tk_social_data_filtered['Comments'] + tk_social_data_filtered['Shares']) / tk_social_data_filtered['Video Views']
+		tk_social_data_filtered.loc[:, 'Engagement Rate'] = (tk_social_data_filtered['Likes'] + tk_social_data_filtered['Comments'] + tk_social_data_filtered['Shares']) / tk_social_data_filtered['Video Views']
 		
 		#Profile Viewer Rate (The ratio of profile views to video views)
-		tk_social_data_filtered['Profile View Rate'] = ( tk_social_data_filtered['Profile Views'] / tk_social_data_filtered['Video Views'])
+		tk_social_data_filtered.loc[:, 'Profile View Rate'] = ( tk_social_data_filtered['Profile Views'] / tk_social_data_filtered['Video Views'])
 
 		#Unique Viewer Rate(The fraction of unique viewers per video view)
 
-		tk_social_data_filtered['Unique Viewer Rate'] = ( tk_social_data_filtered['Unique Viewers'] / tk_social_data_filtered['Video Views'])
+		tk_social_data_filtered.loc[:, 'Unique Viewer Rate'] = ( tk_social_data_filtered['Unique Viewers'] / tk_social_data_filtered['Video Views'])
 
 		# Like-to-Comment Ratio (viewers'ratio of likes to comments, highlighting whether viewers prefer to express appreciation (like) or engage in discussions (comment).
 		# Adding 1 to the denominator to avoid division by zero
 
-		tk_social_data_filtered['Like-to-Comment Ratio'] = (tk_social_data_filtered['Likes'] / (tk_social_data_filtered['Comments'] + 1))
+		tk_social_data_filtered.loc[:, 'Like-to-Comment Ratio'] = (tk_social_data_filtered['Likes'] / (tk_social_data_filtered['Comments'] + 1))
 
 		# Share-to-Like Ratio(viewers' propensity to share content they like)
 		# Adding 1 to the denominator to avoid division by zero
 
-		tk_social_data_filtered['Share-to-Like Ratio'] = tk_social_data_filtered['Shares'] / (tk_social_data_filtered['Likes'] + 1)
+		tk_social_data_filtered.loc[:, 'Share-to-Like Ratio'] = tk_social_data_filtered['Shares'] / (tk_social_data_filtered['Likes'] + 1)
 
 		st.write(tk_social_data_filtered.loc[:,'Engagement Rate':'Share-to-Like Ratio'])
 
 		#compare engagement rate of viral posts to the engagement rate of non-viral ones
 		
-		tk_social_data_not_viral['Engagement Rate'] = (tk_social_data_not_viral['Likes'] + tk_social_data_not_viral['Comments'] + tk_social_data_not_viral['Shares']) / tk_social_data_not_viral['Video Views']
+		tk_social_data_not_viral.loc[:, 'Engagement Rate'] = (tk_social_data_not_viral['Likes'] + tk_social_data_not_viral['Comments'] + tk_social_data_not_viral['Shares']) / tk_social_data_not_viral['Video Views']
 		
 		mean_engage_viral = tk_social_data_filtered['Engagement Rate'].mean() * 100
 
