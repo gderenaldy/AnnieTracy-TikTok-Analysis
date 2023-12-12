@@ -137,10 +137,10 @@ with tiktok_container:
 
 		#filters dataset for "outliers"
 		tk_social_data_filtered = tk_social_data[(tk_social_data['Video Views'] > 25000) & 
-																(tk_social_data['Profile Views'] >= 8000) & 
-																(tk_social_data['Likes'] > 30000) &
-																(tk_social_data['Comments'] >= 700) & 
-																(tk_social_data['Shares'] > 1000)]
+						(tk_social_data['Profile Views'] >= 8000) & 
+						(tk_social_data['Likes'] > 30000) &
+						(tk_social_data['Comments'] >= 700) & 
+						(tk_social_data['Shares'] > 1000)].copy()
 
 		st.write(tk_social_data_filtered)
 
