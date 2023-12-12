@@ -1,6 +1,3 @@
-import sys
-print(sys.executable)
-
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -10,10 +7,6 @@ from sklearn.linear_model import LassoCV
 from sklearn.model_selection import train_test_split
 
 plt.style.use('seaborn')
-st.set_page_config(layout="wide")
-
-
-pd.set_option('display.float_format', '{:.2f}'.format)
 
 intro_container = st.container()
 tiktok_container = st.container()
