@@ -44,16 +44,16 @@ with tiktok_container:
 		fig.set_facecolor("white")
 
 		ax1.bar(tk_data_aggregated_date['Date'], tk_data_aggregated_date['Active followers'], width=0.7, edgecolor= "black", color = "green")
-		ax1.set_title("Mean Active Followers by Day", fontdict = { "fontname" : "arial" , "fontsize" : 12 }).set_color("black")
-		ax1.set_xlabel(' Date', fontdict = { "fontname" : "arial" , "fontsize" : 12 }).set_color("black")
-		ax1.set_ylabel('Average', fontdict = { "fontname" : "arial" , "fontsize" : 12 }).set_color("black")
+		ax1.set_title("Mean Active Followers by Day", fontdict = { "fontsize" : 12 }).set_color("black")
+		ax1.set_xlabel(' Date', fontdict = {"fontsize" : 12 }).set_color("black")
+		ax1.set_ylabel('Average', fontdict = { "fontsize" : 12 }).set_color("black")
 		ax1.set_ybound(lower = 0, upper = 30000)
 		ax1.tick_params(axis = 'x', rotation = 45, color = "white")
 		
 		ax2.bar(tk_data_aggregated_hour['Hour'], tk_data_aggregated_hour['Active followers'], width=0.7, edgecolor= "black", color = "blue")
-		ax2.set_title("Mean Active Followers by Hour", fontdict = { "fontname" : "arial" , "fontsize" : 12 }).set_color("black")
-		ax2.set_xlabel('Hour', fontdict = { "fontname" : "arial" , "fontsize" : 12 }).set_color("black")
-		ax2.set_ylabel('Average', fontdict = { "fontname" : "arial" , "fontsize" : 12 }).set_color("black")
+		ax2.set_title("Mean Active Followers by Hour", fontdict = {"fontsize" : 12 }).set_color("black")
+		ax2.set_xlabel('Hour', fontdict = {"fontsize" : 12 }).set_color("black")
+		ax2.set_ylabel('Average', fontdict = {"fontsize" : 12 }).set_color("black")
 		ax2.set_ybound(lower = 0, upper = 40000)
 		ax2.tick_params(axis='x', rotation=45, color = "white")
 
